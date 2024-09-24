@@ -1,13 +1,13 @@
 package jpabook.springboot_jpa.api;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jpabook.springboot_jpa.domain.Member;
 import jpabook.springboot_jpa.service.MemberService;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,6 +46,17 @@ public class MemberApiController {
         return new CreateMemberResponse(id);
     }
 
+    // PUT은 같은 걸 여러번 호출해도 결과가 똑같다
+    @PutMapping("/api/v2/members/{id}")
+    public UpdateMemberResponse updateMemberV2(@PathVariable("id") Long id, @RequestBody @Valid UpdateMemberRequest request) {
+        memberService.update(id, request.getName());
+        Member findMember = memberService.findOne(id);
+        return new UpdateMemberResponse(findMember.getId(), findMember.getName());
+    }
+
+    /**
+     * Create 용 DTO
+     */
     @Data
     static class CreateMemberRequest {
         private String name;
@@ -58,6 +69,22 @@ public class MemberApiController {
         public CreateMemberResponse(Long id) {
             this.id = id;
         }
+    }
+
+    /**
+     * Update 용 DTO
+     */
+    @Data
+    static class UpdateMemberRequest {
+        @NotEmpty
+        private String name;
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class UpdateMemberResponse {
+        private Long id;
+        private String name;
     }
 
 }
