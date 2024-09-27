@@ -15,3 +15,4 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace #로그에 다음을 추가하기: SQL 실행 파라미터를 로그로 남긴다.
+#    org.hibernate.type: trace
