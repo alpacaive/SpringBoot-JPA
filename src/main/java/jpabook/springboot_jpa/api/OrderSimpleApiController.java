@@ -51,16 +51,27 @@ public class OrderSimpleApiController {
         // N + 1 -> 1(첫번째 쿼리) + N(회원 2 + 배송 2 = 4) = 5번의 쿼리 나감
         List<Order> orders = orderRepository.findAllByString(new OrderSearch());
 
-        //
         List<SimpleOrderDto> result = orders.stream()
                 .map(o -> new SimpleOrderDto(o))
                 .collect(Collectors.toList());
 
         return result;
     }
-
     // === v1, v2의 공통적인 문제점 : 레이지 로딩으로 인한 데이터베이스 쿼리가 너무 많이 호출되는 문제가 발생 ===
 
+    /**
+     * 페치 조인 사용해서 최적화
+     * 엔티티를 페치 조인을 사용해 쿼리 1번에 조회
+     * 페치 조인으로 order -> member, order -> delivery 는 이미 조회된 상태이므로 지연로딩 X
+     */
+    @GetMapping("/api/v3/simple-orders")
+    public List<SimpleOrderDto> orderV3() {
+        List<Order> orders = orderRepository.findAllWithMemberDelivery();
+        List<SimpleOrderDto> result = orders.stream()
+                .map(o -> new SimpleOrderDto(o))
+                .collect(Collectors.toList());
+        return result;
+    }
 
 
     /**
