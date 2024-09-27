@@ -5,6 +5,8 @@ import jpabook.springboot_jpa.domain.Order;
 import jpabook.springboot_jpa.domain.OrderStatus;
 import jpabook.springboot_jpa.repository.OrderRepository;
 import jpabook.springboot_jpa.repository.OrderSearch;
+import jpabook.springboot_jpa.repository.order.simplequery.OrderSimpleQueryDto;
+import jpabook.springboot_jpa.repository.order.simplequery.OrderSimpleQueryRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 public class OrderSimpleApiController {
 
     private final OrderRepository orderRepository;
+    private final OrderSimpleQueryRepository orderSimpleQueryRepository;
 
     @GetMapping("/api/v1/simple-orders")
     public List<Order> orderV1() {
@@ -73,6 +76,26 @@ public class OrderSimpleApiController {
         return result;
     }
 
+    /**
+     * JPA에서 DTO로 바로 조회
+     * 일반적인 SQL 을 사용할 때 처럼 원하는 값을 선택하여 조회
+     * new 명령어를 사용해 JPQL의 결과를 DTO로 즉시 변환
+     * SELECT 절에서 원하는 데이터를 직접 선택하므로 DB -> 애플리케이션 네트워크 용량 최적화(생각보다 미비)
+     * 리포지토리 재사용성이 떨어짐, API 스펙에 맞춘 코드가 리포지토리에 들어가는 단점
+     */
+    @GetMapping("/api/v4/simple-orders")
+    public List<OrderSimpleQueryDto> orderV4() {
+        return orderSimpleQueryRepository.findOrderDtos();
+    }
+    // v3, v4 비교 : v3는 재사용성이 좋고 v4는 재사용성이 없지만, v3보다는 v4가 성능 최적화 면에서는 조금 더 좋다.
+
+    /**
+     * === 쿼리 방식 선택 권장 순서 ===
+     * 1. 우선 엔티티를 DTO로 변환하는 방법을 선택
+     * 2. 필요하면 페치 조인으로 성능 최적화 -> 대부분의 성능 이슈 해결
+     * 3. 그래도 안되면 DTO로 직접 조회하는 방법 사용
+     * 4. 최후의 방법은 JPA가 제공하는 네이티브 SQL이나 스프링 JDBC Template 사용해 SQL을 직접 사용
+     */
 
     /**
      * Read 용 DTO (v2)
