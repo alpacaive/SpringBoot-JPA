@@ -6,6 +6,8 @@ import jpabook.springboot_jpa.domain.OrderItem;
 import jpabook.springboot_jpa.domain.OrderStatus;
 import jpabook.springboot_jpa.repository.OrderRepository;
 import jpabook.springboot_jpa.repository.OrderSearch;
+import jpabook.springboot_jpa.repository.order.query.OrderQueryDto;
+import jpabook.springboot_jpa.repository.order.query.OrderQueryRepository;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +46,7 @@ import java.util.stream.Collectors;
 public class OrderApiController {
 
     private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
 
     /**
      * V1 엔티티 직접 노출
@@ -107,6 +110,19 @@ public class OrderApiController {
                 .map(o -> new OrderDto(o))
                 .collect(Collectors.toList());
         return result;
+    }
+
+    /**
+     * Query : 루트 1번, 컬렉션 N번 실행
+     * ToOne(N:1, 1:1) 관계들을 먼저 조회하고, ToMany(1 : N) 관계는 각각 별도로 처리한다
+     *    - ToOne 관계는 조인해도 데이터 row 수가 증가하지 않는다
+     *    - ToMany(1:N) 관계는 조인하면 row 수가 증가한다
+     * row 수가 증가하지 않는 ToOne 관계는 조인으로 최적화 하기 쉬우므로 한번에 조회하고
+     * , ToMany 관계는 최적화하기 어려우므로 findOrderItems() 같은 별도의 메서드로 조회한다
+     */
+    @GetMapping("/api/v4/orders")
+    public List<OrderQueryDto> ordersV4() {
+        return orderQueryRepository.findOrderQueryDtos();
     }
 
 
