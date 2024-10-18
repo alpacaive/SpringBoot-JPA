@@ -24,7 +24,7 @@ public class Member {
     @Embedded
     private Address address;
 
-//    @JsonIgnore -> 이거 넣으면 주문 정보는 빠지고 단순 회원 정보만 나옴 BUT 안좋음 = 엔티티는 노출하지 말자.
+    @JsonIgnore // -> 이거 넣으면 주문 정보는 빠지고 단순 회원 정보만 나옴 BUT 안좋음 = 엔티티는 노출하지 말자.
     @OneToMany(mappedBy = "member")
     private List<Order> orders = new ArrayList<>();
 
